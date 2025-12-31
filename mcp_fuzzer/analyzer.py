@@ -31,11 +31,11 @@ class VulnerabilityAnalyzer:
     # Vulnerability indicators by category - ONLY successful exploitation
     INDICATORS = {
         "command_injection": [
-            "root:x:",  # More specific - actual /etc/passwd content
-            "uid=0(root)",  # Actual command output
-            "uid=1000",  # User ID output
-            "drwxr-xr-x",  # Directory listing output
+            "root:x:",  # /etc/passwd content
+            "uid=",  # Command output showing user ID (more flexible)
+            "drwx",  # Directory listing output (any permissions)
             "bin/bash",  # Shell output
+            "bin/sh",  # Shell output
             "nobody:x:",  # Password file content
             "total ",  # ls -la output (with space to be specific)
         ],
@@ -45,6 +45,7 @@ class VulnerabilityAnalyzer:
             "[boot loader]",  # Windows boot.ini
             "c:\\windows\\system32",  # Windows system path in actual content
             "localhost",  # /etc/hosts content
+            "127.0.0.1",  # /etc/hosts content
         ],
         "sql_injection": [
             "sql syntax",
@@ -57,6 +58,10 @@ class VulnerabilityAnalyzer:
             "sqlstate",
             "syntax error at or near",
             "unclosed quotation mark",
+            "sql query executed",  # Successful query execution logs
+            "select * from",  # SQL query in response
+            "password:",  # Database field leaked
+            "secret",  # Password/secret leaked
         ],
         "ssrf": [
             "ami-id",
