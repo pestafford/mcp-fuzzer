@@ -10,7 +10,7 @@ from .fuzzer import MCPFuzzer, FuzzingFinding
 from .payloads import PayloadLibrary
 from .analyzer import VulnerabilityAnalyzer
 
-__version__ = "1.0.0"
+__version__ = "1.0.1"
 __author__ = "Credence Security"
 
 __all__ = [

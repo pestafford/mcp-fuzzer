@@ -10,31 +10,41 @@ from typing import Any, Dict, List, Optional
 class VulnerabilityAnalyzer:
     """Analyzes tool responses to detect security vulnerabilities"""
 
-    # Vulnerability indicators by category
+    # Indicators that security controls are WORKING (not vulnerable)
+    SECURITY_CONTROL_INDICATORS = [
+        "access denied",
+        "permission denied",
+        "unauthorized",
+        "forbidden",
+        "not allowed",
+        "outside allowed",
+        "blocked",
+        "rejected",
+        "invalid path",
+        "restricted",
+        "cannot access",  # Often means controls working
+        "not permitted",
+        "security violation",
+        "policy violation",
+    ]
+
+    # Vulnerability indicators by category - ONLY successful exploitation
     INDICATORS = {
         "command_injection": [
-            "root:",
-            "uid=",
-            "/home/",
-            "/bin/",
-            "drwx",
-            "total ",
-            "cannot access",
-            "permission denied",
-            "/usr/bin",
-            "/sbin",
-            "nobody:",
+            "root:x:",  # More specific - actual /etc/passwd content
+            "uid=0(root)",  # Actual command output
+            "uid=1000",  # User ID output
+            "drwxr-xr-x",  # Directory listing output
+            "bin/bash",  # Shell output
+            "nobody:x:",  # Password file content
+            "total ",  # ls -la output (with space to be specific)
         ],
         "path_traversal": [
-            "root:",
-            "/etc/",
-            "x:0:",
-            "daemon:",
-            "/usr/bin",
-            "windows\\system32",
-            "c:\\windows",
-            "[boot loader]",
-            "localhost",
+            "root:x:0:0",  # /etc/passwd content
+            "daemon:x:",  # /etc/passwd content
+            "[boot loader]",  # Windows boot.ini
+            "c:\\windows\\system32",  # Windows system path in actual content
+            "localhost",  # /etc/hosts content
         ],
         "sql_injection": [
             "sql syntax",
@@ -156,24 +166,22 @@ class VulnerabilityAnalyzer:
 
         content_str = str(result.content).lower()
 
-        # Check for category-specific indicators
+        # FIRST: Check if security controls are working
+        # If we see these indicators, the attack was BLOCKED (not vulnerable)
+        for control_indicator in cls.SECURITY_CONTROL_INDICATORS:
+            if control_indicator in content_str:
+                # Security control is working - not vulnerable
+                return False, None
+
+        # Check for category-specific SUCCESS indicators
         category_indicators = cls.INDICATORS.get(category, [])
 
         for indicator in category_indicators:
             if indicator.lower() in content_str:
-                return True, f"Response contains '{indicator}' - indicator of {category}"
+                return True, f"Response contains '{indicator}' - successful {category}"
 
-        # Check for generic error indicators combined with payload
-        payload_lower = payload[:20].lower()
-        has_error = any(
-            indicator in content_str for indicator in cls.ERROR_INDICATORS
-        )
-
-        if has_error and payload_lower in content_str:
-            return (
-                True,
-                f"Error response contains payload fragment - possible {category}",
-            )
+        # Only flag errors if they indicate PROCESSING issues, not access control
+        # Skip the generic "error + payload" check as it causes too many false positives
 
         return False, None
 
@@ -197,22 +205,25 @@ class VulnerabilityAnalyzer:
         """
         error_str = str(error).lower()
 
-        # Security-relevant error patterns
-        security_patterns = [
-            "syntax error",
-            "sql",
-            "command",
-            "permission denied",
-            "access denied",
-            "unauthorized",
-            "forbidden",
-            "invalid",
-            "injection",
-            "parse error",
-            "malformed",
+        # FIRST: Check if this is a security control working correctly
+        # These errors mean the server REJECTED the attack (good)
+        for control_indicator in cls.SECURITY_CONTROL_INDICATORS:
+            if control_indicator in error_str:
+                return False  # Not vulnerable - security control working
+
+        # Only flag errors that indicate PROCESSING vulnerabilities
+        # (not access control rejections)
+        processing_error_patterns = [
+            "syntax error",  # SQL/code parsing errors
+            "sql",  # SQL errors (not access control)
+            "parse error",  # Parsing issues
+            "malformed",  # Malformed input processed
+            "unexpected",  # Unexpected behavior
+            "stack trace",  # Application errors
+            "exception",  # Unhandled exceptions
         ]
 
-        return any(pattern in error_str for pattern in security_patterns)
+        return any(pattern in error_str for pattern in processing_error_patterns)
 
     @classmethod
     def get_remediation(cls, category: str) -> str:

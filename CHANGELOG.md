@@ -5,6 +5,19 @@ All notable changes to MCP Fuzzer will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.1] - 2024-12-31
+
+### Changed
+- **Major false positive reduction**: Analyzer now distinguishes between successful attacks and blocked attacks
+- Added security control indicators - no longer flags "Access denied", "Permission denied", etc. as vulnerabilities
+- Made vulnerability indicators more specific (e.g., "root:x:0:0" instead of "/home/")
+- Improved error analysis to only flag processing errors, not access control rejections
+- Removed overly generic error + payload detection that caused false positives
+
+### Fixed
+- Fixed nvm PATH issue - fuzzer now automatically adds Node.js bin directory to subprocess environment
+- Fixed false positives where security controls working correctly were flagged as vulnerabilities
+
 ## [1.0.0] - 2024-12-30
 
 ### Added
