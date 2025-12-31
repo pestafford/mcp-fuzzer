@@ -60,3 +60,6 @@ results/
 reports/
 *.json
 *.html
+
+docs/PUBLISHING*
+docs/IMPLEMENTATION*

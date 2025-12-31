@@ -19,7 +19,7 @@ We successfully created a complete MCP security testing ecosystem consisting of 
 - Multiple output formats (Text, JSON, HTML)
 
 **Key Features**:
-✅ Production-ready PyPI package
+✅ Production-ready package
 ✅ Zero dependencies beyond MCP SDK
 ✅ 19/19 unit tests passing
 ✅ Professional documentation
@@ -203,24 +203,9 @@ thinktank/
 
 ### For MCP Fuzzer
 
-1. **Publish to PyPI**:
-   ```bash
-   cd ~/projects/mcp-fuzzer
-   python -m build
-   twine upload dist/*
-   ```
+1. **GitHub Repository**: ✅ Created at https://github.com/pestafford/mcp-fuzzer
 
-2. **Create GitHub Repository**:
-   ```bash
-   cd ~/projects/mcp-fuzzer
-   git init
-   git add .
-   git commit -m "Initial release: MCP Fuzzer v1.0.0"
-   git remote add origin https://github.com/YOUR_ORG/mcp-fuzzer
-   git push -u origin main
-   ```
-
-3. **Reduce False Positives**:
+2. **Reduce False Positives**:
    - Tune analyzer detection patterns
    - Add context-aware analysis
    - Implement severity confidence scores
@@ -315,4 +300,5 @@ Each tool provides clear value independently while working together for complete
 ---
 
 **Status**: ✅ Production Ready
-**Next Action**: Publish to PyPI and create GitHub repository
+**Repository**: https://github.com/pestafford/mcp-fuzzer
+**Next Action**: Push code to GitHub, optionally publish to PyPI later (see docs/PUBLISHING_TO_PYPI.md)

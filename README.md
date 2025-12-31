@@ -17,13 +17,15 @@ MCP Fuzzer is a comprehensive fuzzing tool designed to test MCP servers against 
 ## Installation
 
 ```bash
-# From PyPI (recommended)
-pip install mcp-fuzzer
-
-# From source
-git clone https://github.com/credence-security/mcp-fuzzer
+# Clone the repository
+git clone https://github.com/pestafford/mcp-fuzzer
 cd mcp-fuzzer
+
+# Install in development mode
 pip install -e .
+
+# Verify installation
+mcp-fuzzer --version
 ```
 
 ## Quick Start
@@ -230,8 +232,13 @@ jobs:
         with:
           python-version: '3.11'
 
+      - name: Checkout MCP Fuzzer
+        uses: actions/checkout@v3
+        with:
+          repository: pestafford/mcp-fuzzer
+
       - name: Install MCP Fuzzer
-        run: pip install mcp-fuzzer
+        run: pip install -e .
 
       - name: Run fuzzing
         run: |
@@ -261,8 +268,12 @@ jobs:
 mcp-fuzzer:
   stage: test
   image: python:3.11
+  before_script:
+    - git clone https://github.com/pestafford/mcp-fuzzer
+    - cd mcp-fuzzer
+    - pip install -e .
+    - cd ..
   script:
-    - pip install mcp-fuzzer
     - mcp-fuzzer npx -y @modelcontextprotocol/server-filesystem /tmp --output results.json --format json
     - |
       CRITICAL=$(jq '.summary.by_severity.CRITICAL' results.json)
@@ -282,11 +293,13 @@ mcp-fuzzer:
 ```dockerfile
 FROM python:3.11-slim
 
-# Install Node.js for MCP servers
-RUN apt-get update && apt-get install -y nodejs npm
+# Install Node.js and git
+RUN apt-get update && apt-get install -y nodejs npm git
 
-# Install MCP Fuzzer
-RUN pip install mcp-fuzzer
+# Clone and install MCP Fuzzer
+RUN git clone https://github.com/pestafford/mcp-fuzzer /opt/mcp-fuzzer && \
+    cd /opt/mcp-fuzzer && \
+    pip install -e .
 
 # Run fuzzing
 ENTRYPOINT ["mcp-fuzzer"]
